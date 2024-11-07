@@ -1,0 +1,51 @@
+name: Build, Test, and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # Step 1: Checkout the code
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    # Step 2: Set up .NET (or your application stack)
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.x'  # Specify your required version
+
+    # Step 3: Install dependencies
+    - name: Install dependencies
+      run: |
+        dotnet restore
+
+    # Step 4: Build the application
+    - name: Build the application
+      run: |
+        dotnet build --configuration Release
+
+    # Step 5: Run unit tests
+    - name: Run tests
+      run: |
+        dotnet test --configuration Release --logger "trx"
+
+    # Step 6: Publish test results
+    - name: Publish test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: '**/*.trx'  # Path to test results
+
+    # Optional: Step 7: Publish the app (for example, .NET Core publish)
+    - name: Publish the application
+      run: |
+        dotnet publish -c Release -o ./publish
